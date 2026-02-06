@@ -1,9 +1,23 @@
-#Install Easy-RSA
+#Install OpenVPN
+- name: Install OpenVPN
+  ansible.builtin.dnf:
+    name: openvpn
+    state: present
 
+#Install Easy-RSA
 - name: Install Easy-RSA
   ansible.builtin.dnf:
     name: easy-rsa
     state: present
+
+#Create OpenVPN Folder
+- name: Create OpenVPN Folder
+  ansible.builtin.file:
+    path: /etc/openvpn
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
 
 #Set up PKI directory
 - name: Create PKI directory
@@ -12,13 +26,13 @@
     state: directory
     owner: root
     group: root
-    mode: '0700'
+    mode: '0755'
 
 #Initialize PKI
 - name: Initialize PKI
   ansible.builtin.command:
-    cmd: "/usr/share/easy-rsa/3/easyrsa init-pki"
     chdir: /etc/openvpn
+    cmd: "/usr/share/easy-rsa/3/easyrsa init-pki"
   args:
     creates: /etc/openvpn/pki
 
@@ -33,7 +47,7 @@
 #Server cert and Key
 - name: Generate Server Cert and Key
   ansible.builtin.command:
-    cmd: "/usr/share/easy-rsa/3/easyrsa --batchbuild-server-full server nopass"
+    cmd: "/usr/share/easy-rsa/3/easyrsa --batch build-server-full server nopass"
     chdir: /etc/openvpn
   args:
     creates: /etc/openvpn/pki/issued/server.crt
