@@ -1,0 +1,57 @@
+# 1. Install OpenVPN
+    - name: Install OpenVPN
+      ansible.builtin.apt:
+        name: openvpn
+        state: present
+
+    # 2. Create client directory
+    - name: Create OpenVPN client directory
+      ansible.builtin.file:
+        path: "{{ openvpn_client_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0700'
+
+    # 3. Upload CA certificate
+    - name: Upload CA certificate
+      ansible.builtin.copy:
+        src: "ca.crt"
+        dest: "{{ openvpn_client_dir }}/ca.crt"
+        owner: root
+        group: root
+        mode: '0644'
+
+    # 4. Upload client certificate
+    - name: Upload client certificate
+      ansible.builtin.copy:
+        src: "{{ openvpn_client_name }}.crt"
+        dest: "{{ openvpn_client_dir }}/{{ openvpn_client_name }}.crt"
+        owner: root
+        group: root
+        mode: '0644'
+
+    # 5. Upload client key
+    - name: Upload client key
+      ansible.builtin.copy:
+        src: "{{ openvpn_client_name }}.key"
+        dest: "{{ openvpn_client_dir }}/{{ openvpn_client_name }}.key"
+        owner: root
+        group: root
+        mode: '0600'
+
+    # 7. Create client.ovpn config
+    - name: Create OpenVPN client config
+      ansible.builtin.template:
+        src: "templates/client.ovpn"
+        dest: "{{ openvpn_client_dir }}/client.conf"
+        owner: root
+        group: root
+        mode: '0600'
+
+    # 8. Enable OpenVPN service (if systemd service available)
+    - name: Enable OpenVPN client service
+      ansible.builtin.systemd:
+        name: "openvpn-client@client"
+        enabled: yes
+        state: started

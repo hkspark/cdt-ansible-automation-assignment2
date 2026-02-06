@@ -1,0 +1,42 @@
+- hosts: openvpn
+  become: true
+  tasks:
+
+    - name: Stop OpenVPN
+      ansible.builtin.systemd:
+        name: openvpn-server@server
+        state: stopped
+      ignore_errors: true
+
+    - name: Remove OpenVPN packages
+      ansible.builtin.dnf:
+        name:
+          - openvpn
+          - easy-rsa
+        state: absent
+
+    - name: Remove OpenVPN configuration directory
+      ansible.builtin.file:
+        path: /etc/openvpn
+        state: absent
+
+    - name: Remove OpenVPN systemd unit leftovers
+      ansible.builtin.file:
+        path: /etc/systemd/system/openvpn-server@server.service.d
+        state: absent
+
+    - name: Reload systemd
+      ansible.builtin.command: systemctl daemon-reexec
+
+    - name: Close OpenVPN firewall port
+      ansible.builtin.firewalld:
+        port: 1194/udp
+        state: disabled
+        permanent: true
+      ignore_errors: true
+
+    - name: Reload firewalld
+      ansible.builtin.service:
+        name: firewalld
+        state: reloaded
+      ignore_errors: true

@@ -15,8 +15,7 @@
   ansible.builtin.file:
     path: /etc/openvpn
     state: directory
-    owner: root
-    group: root
+    owner: cyberrange
     mode: '0777'
 
 
@@ -25,8 +24,7 @@
   ansible.builtin.file:
     path: "/etc/openvpn/pki/{{ item }}"
     state: directory
-    owner: root
-    group: root
+    owner: cyberrange
     mode: '0777'
   loop:
    - private
@@ -39,17 +37,15 @@
   ansible.builtin.file:
     path: /etc/openvpn/pki/index.txt
     state: touch
-    owner: root
-    group: root
-    mode: '0644'
+    owner: cyberrange
+    mode: '0777'
   
 #Create serial file
 - name: Create serial file
   ansible.builtin.copy:
     dest: /etc/openvpn/pki/serial
     content: "01\n"
-    owner: root
-    group: root
+    owner: cyberrange
     mode: '0777'
 
 #Create crl.pem
@@ -57,8 +53,7 @@
   ansible.builtin.file:
     path: /etc/openvpn/pki/crl.pem
     state: touch
-    owner: root
-    group: root
+    owner: cyberrange
     mode: '0777'
 
 #Build CA
@@ -68,6 +63,14 @@
     chdir: /etc/openvpn
   args:
     creates: /etc/openvpn/pki/ca.crt
+
+#Generate Client Cert and Key
+- name: Generate Client Cert and Key
+  ansible.builtin.command:
+    cmd: "/usr/share/easy-rsa/3/easyrsa --batch build-client-full client1 nopass"
+    chdir: /etc/openvpn
+  args:
+    creates: /etc/openvpn/pki/issued/client1.crt
 
 #Server cert and Key
 - name: Generate Server Cert and Key

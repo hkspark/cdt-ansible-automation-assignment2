@@ -3,3 +3,8 @@
   roles:
     - Easy-RSA
     - OpenVPN
+
+- hosts: client
+  become: true
+  roles:
+    - Client

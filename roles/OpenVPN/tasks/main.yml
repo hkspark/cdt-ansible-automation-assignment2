@@ -9,50 +9,11 @@
 #OpenVPN Config
     - name: Copy OpenVPN Server Config
       ansible.builtin.copy:
-       dest: /etc/openvpn/server/server.Config
-       content: |
-        port {{ openvpn_port}}
-        proto {{ openvpn_proto}}
-        dev tun
-        user cyberrange
-        group openvpn
-        persist-key
-        persist-tun
-
-        #PKI files
-        ca /etc/openvpn/pki/ca.crt
-        cert /etc/openvpn/pki/issued/server.crt
-        key /etc/openvpn/pki/private/server.key
-        dh /etc/openvpn/pki/dh.permanent
-
-        #TLS
-        tls-server
-        tls-version-min {{ tls_min}}
-        tls-version-max {{ tls_max}}
-        tls-auth /etc/openvpn/pki/ta.key
-        key-direction 0
-
-        #Network
-        server 15.8.0.0 255.255.255.0
-        topology subnet
-        ifconfig-pool-persist ipp.txt
-        push "redirect-gateway def1 bypass-dhcp"
-        push "dhcp-option DNS 129.21.1.92"
-        push "dhcp-option DNS 8.8.8.8"
-
-        #Crypto
-        data-ciphers AES-256-GCM:AES-128-GCM
-        data-ciphers-fallback AES-256-CBC
-        auth SHA256
-
-        #Keepalive and logging
-        keepalive 10 120
-        explicit-exit-notify 1
-        verb 3
-
-       owner: root
-       group: root
-       mode: '0644'
+        src: server.conf
+        dest: /etc/openvpn/server/server.conf
+        owner: cyberrange
+        mode: '0644'
+      notify: Restart OpenVPN
 
 #Install firewalld
     - name: Install firewalld
@@ -76,7 +37,7 @@
 
 #Allow traffic through firewall
     - name: Open firewall port
-      ansible.posix.firewalld:
+      ansible.builtin.firewalld:
        port: "{{ openvpn_port }}/{{ openvpn_proto}}"
        permanent: true
        state: enabled
