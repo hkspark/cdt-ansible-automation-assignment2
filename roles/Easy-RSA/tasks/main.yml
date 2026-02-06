@@ -1,0 +1,55 @@
+#Install Easy-RSA
+
+- name: Install Easy-RSA
+  ansible.builtin.dnf:
+    name: easy-rsa
+    state: present
+
+#Set up PKI directory
+- name: Create PKI directory
+  ansible.builtin.file:
+    path: /etc/openvpn/pki
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+#Initialize PKI
+- name: Initialize PKI
+  ansible.builtin.command:
+    cmd: "/usr/share/easy-rsa/3/easyrsa init-pki"
+    chdir: /etc/openvpn
+  args:
+    creates: /etc/openvpn/pki
+
+#Build CA
+- name: Build CA
+  ansible.builtin.command:
+    cmd: "/usr/share/easy-rsa/3/easyrsa --batch build-ca nopass"
+    chdir: /etc/openvpn
+  args:
+    creates: /etc/openvpn/pki/ca.crt
+
+#Server cert and Key
+- name: Generate Server Cert and Key
+  ansible.builtin.command:
+    cmd: "/usr/share/easy-rsa/3/easyrsa --batchbuild-server-full server nopass"
+    chdir: /etc/openvpn
+  args:
+    creates: /etc/openvpn/pki/issued/server.crt
+
+#DH Parameters
+- name: Create DH Parameters
+  ansible.builtin.command:
+    cmd: "/usr/share/easy-rsa/3/easyrsa gen-dh"
+    chdir: /etc/openvpn
+  args:
+    creates: /etc/openvpn/pki/dh.pem
+
+#TLS Auth key
+- name: Create TLS Auth Key
+  ansible.builtin.command:
+    cmd: "openvpn --genkey --secret ta.key"
+    chdir: /etc/openvpn/pki
+  args:
+    creates: /etc/openvpn/pki/ta.key
