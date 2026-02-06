@@ -27,7 +27,8 @@
 
         #TLS
         tls-server
-        tls-version-min 1.2
+        tls-version-min {{ tls_min}}
+        tls-version-max {{ tls_max}}
         tls-auth /etc/openvpn/pki/ta.key
         key-direction 0
 

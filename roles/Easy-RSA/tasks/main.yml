@@ -17,24 +17,49 @@
     state: directory
     owner: root
     group: root
-    mode: '0755'
+    mode: '0777'
 
-#Set up PKI directory
-- name: Create PKI directory
+
+#Create PKI Directories (because init-pki is fucking me up)
+- name: Create PKI Directories
   ansible.builtin.file:
-    path: /etc/openvpn/pki
+    path: "/etc/openvpn/pki/{{ item }}"
     state: directory
     owner: root
     group: root
-    mode: '0755'
+    mode: '0777'
+  loop:
+   - private
+   - issued
+   - reqs
+   - certs
 
-#Initialize PKI
-- name: Initialize PKI
-  ansible.builtin.command:
-    chdir: /etc/openvpn
-    cmd: "/usr/share/easy-rsa/3/easyrsa init-pki"
-  args:
-    creates: /etc/openvpn/pki
+#Create Empty index.txt
+- name: Create index.txt
+  ansible.builtin.file:
+    path: /etc/openvpn/pki/index.txt
+    state: touch
+    owner: root
+    group: root
+    mode: '0644'
+  
+#Create serial file
+- name: Create serial file
+  ansible.builtin.copy:
+    dest: /etc/openvpn/pki/serial
+    content: "01\n"
+    owner: root
+    group: root
+    mode: '0777'
+
+#Create crl.pem
+- name: Create crl.pem
+  ansible.builtin.file:
+    path: /etc/openvpn/pki/crl.pem
+    state: touch
+    owner: root
+    group: root
+    mode: '0777'
 
 #Build CA
 - name: Build CA
