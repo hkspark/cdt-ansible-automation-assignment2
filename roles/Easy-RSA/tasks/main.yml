@@ -19,7 +19,7 @@
     mode: '0777'
 
 
-#Create PKI Directories (because init-pki is fucking me up)
+#Create PKI Directories (because init-pki isn't working)
 - name: Create PKI Directories
   ansible.builtin.file:
     path: "/etc/openvpn/pki/{{ item }}"
@@ -87,11 +87,3 @@
     chdir: /etc/openvpn
   args:
     creates: /etc/openvpn/pki/dh.pem
-
-#TLS Auth key
-- name: Create TLS Auth Key
-  ansible.builtin.command:
-    cmd: "openvpn --genkey --secret ta.key"
-    chdir: /etc/openvpn/pki
-  args:
-    creates: /etc/openvpn/pki/ta.key
